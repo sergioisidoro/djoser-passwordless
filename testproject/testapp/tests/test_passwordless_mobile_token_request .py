@@ -12,6 +12,11 @@ User = get_user_model()
 class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssertionsMixin):
     url = reverse("passwordless_mobile_signup_request")
 
+    def test_post_gibberish_will_return_validation_errors(self):
+        data = {"phone_number": "Totally a phone number"}
+        response = self.client.post(self.url, data=data)
+        self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
+
     @override_settings(
         DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
           "REGISTER_NONEXISTENT_USERS": False

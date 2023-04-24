@@ -6,7 +6,12 @@ from rest_framework.test import APITestCase
 from testapp.tests.common import create_user
 from django.conf import settings
 from django.test.utils import override_settings
+from djoser_passwordless.conf import settings as djoser_passwordless_settings
 from .utils import create_token
+from django.utils import timezone
+from datetime import timedelta
+from unittest import mock
+
 
 User = get_user_model()
 
@@ -34,7 +39,7 @@ class TestPasswordlessTokenExchange(APITestCase, assertions.StatusCodeAssertions
     def test_should_accept_short_token_when_same_info_included(self):
         token = create_token("email")
         data = {
-            "token": token.token,
+            "token": token.short_token,
             "email": token.user.email
             }
         response = self.client.post(self.url, data=data)
@@ -48,7 +53,7 @@ class TestPasswordlessTokenExchange(APITestCase, assertions.StatusCodeAssertions
     def test_should_allow_redeeming_token_only_limited_times(self):
         token = create_token("email")
         data = {
-            "token": token.token,
+            "token": token.short_token,
             "email": token.user.email
             }
         response = self.client.post(self.url, data=data)
@@ -67,7 +72,7 @@ class TestPasswordlessTokenExchange(APITestCase, assertions.StatusCodeAssertions
     def test_should_allow_redeeming_token_only_limited_times(self):
         token = create_token("email")
         data = {
-            "token": token.token,
+            "token": token.short_token,
             "email": token.user.email
         }
         response = self.client.post(self.url, data=data)
@@ -112,3 +117,31 @@ class TestPasswordlessTokenExchange(APITestCase, assertions.StatusCodeAssertions
         self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
         token.refresh_from_db()
         self.assertEqual(token.uses, 0)
+
+    def test_redeeming_expired_token_does_not_work(self):
+        past_time = timezone.now() - timedelta(seconds=djoser_passwordless_settings.TOKEN_LIFETIME + 1)
+        
+        with mock.patch('django.utils.timezone.now', mock.Mock(return_value=past_time)):
+          # Create a toke in the past
+          token = create_token("email")
+
+        data = {
+            "token": token.short_token,
+            "email": token.user.email
+        }
+        response = self.client.post(self.url, data=data)
+        self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
+
+
+    def test_redeeming_standalone_expired_token_does_not_work(self):
+        past_time = timezone.now() - timedelta(seconds=djoser_passwordless_settings.TOKEN_LIFETIME + 1)
+        
+        with mock.patch('django.utils.timezone.now', mock.Mock(return_value=past_time)):
+          # Create a toke in the past
+          token = create_token("email")
+
+        data = {
+            "token": token.token,
+        }
+        response = self.client.post(self.standalone_url, data=data)
+        self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
