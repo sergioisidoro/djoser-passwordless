@@ -1,7 +1,7 @@
 from templated_mail.mail import BaseEmailMessage
 
 from djoser import utils
-from djoser.conf import settings
+from djoser_passwordless.conf import settings
 
 class PasswordlessRequestEmail(BaseEmailMessage):
     template_name = "email/passwordless_request.html"
@@ -10,7 +10,7 @@ class PasswordlessRequestEmail(BaseEmailMessage):
         context = super().get_context_data()
         user = context.get("user")
 
-        if settings.PASSWORDLESS.get("PASSWORDLESS_EMAIL_LOGIN_URL", None):
+        if settings.PASSWORDLESS_EMAIL_LOGIN_URL:
             # Eg magic links / Deep links for mobile apps
-            context["url"] = settings.PASSWORDLESS["PASSWORDLESS_EMAIL_LOGIN_URL"].format(**context)
+            context["url"] = settings.PASSWORDLESS_EMAIL_LOGIN_URL.format(**context)
         return context

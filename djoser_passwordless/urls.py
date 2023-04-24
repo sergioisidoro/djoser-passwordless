@@ -26,6 +26,6 @@ urlpatterns = [
     re_path(
         r"^exchange/standalone$",
         views.StandaloneExchangePasswordlessTokenForAuthTokenView.as_view(),
-        name="email_passwordless_token_exchange",
+        name="standalone_passwordless_token_exchange",
     )
 ]

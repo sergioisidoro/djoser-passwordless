@@ -1,4 +1,5 @@
-from djoser.conf import settings
+from djoser_passwordless.conf import settings
+from djoser.conf import settings as djoser_settings
 from rest_framework import status
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
@@ -18,7 +19,7 @@ class AbstractPasswordlessTokenRequestView(APIView):
     success_response = Messages.TOKEN_SENT
     failure_response = Messages.CANNOT_SEND_TOKEN
 
-    permission_classes = settings.PASSWORDLESS["PERMISSIONS"].passwordless_token_request
+    permission_classes = settings.PERMISSIONS.passwordless_token_request
 
     @property
     def serializer_class(self):
@@ -47,9 +48,9 @@ class AbstractPasswordlessTokenRequestView(APIView):
         return Response({'detail': response_detail}, status=status_code)
 
 
-    @method_decorator(settings.PASSWORDLESS["DECORATORS"].token_request_rate_limit_decorator)  
+    @method_decorator(settings.DECORATORS.token_request_rate_limit_decorator)  
     def post(self, request, *args, **kwargs):
-        if self.token_request_identifier_type.upper() not in settings.PASSWORDLESS["ALLOWED_PASSWORDLESS_METHODS"]:
+        if self.token_request_identifier_type.upper() not in settings.ALLOWED_PASSWORDLESS_METHODS:
             # Only allow auth types allowed in settings.
             return Response(status=status.HTTP_404_NOT_FOUND)
         
@@ -75,8 +76,8 @@ class AbstractPasswordlessTokenRequestView(APIView):
 
 class PasswordlessEmailTokenRequestView(AbstractPasswordlessTokenRequestView):
     permission_classes = (AllowAny,)
-    serializer_class = settings.PASSWORDLESS["SERIALIZERS"].passwordless_email_token_request
-    token_request_identifier_field = settings.PASSWORDLESS["EMAIL_FIELD_NAME"]
+    serializer_class = settings.SERIALIZERS.passwordless_email_token_request
+    token_request_identifier_field = settings.EMAIL_FIELD_NAME
     token_request_identifier_type = 'email'
 
     def send(self, token):
@@ -87,13 +88,13 @@ class PasswordlessEmailTokenRequestView(AbstractPasswordlessTokenRequestView):
             "short_token": token.short_token
           }
         to = [get_user_email(user)]
-        settings.PASSWORDLESS["EMAIL"].passwordless_request(self.request, context).send(to)
+        settings.EMAIL.passwordless_request(self.request, context).send(to)
 
 
 class PasswordlessMobileTokenRequestView(AbstractPasswordlessTokenRequestView):
     permission_classes = (AllowAny,)
-    serializer_class = settings.PASSWORDLESS["SERIALIZERS"].passwordless_mobile_token_request
-    token_request_identifier_field = settings.PASSWORDLESS["MOBILE_FIELD_NAME"]
+    serializer_class = settings.SERIALIZERS.passwordless_mobile_token_request
+    token_request_identifier_field = settings.MOBILE_FIELD_NAME
     token_request_identifier_type = 'mobile'
   
     def send(self, token):
@@ -103,20 +104,20 @@ class PasswordlessMobileTokenRequestView(AbstractPasswordlessTokenRequestView):
             "token": token.token,
             "short_token": token.short_token
           }
-        to = getattr(user, settings.PASSWORDLESS["MOBILE_FIELD_NAME"])
-        return settings.PASSWORDLESS["SMS_SENDERS"].passwordless_request(self.request, context).send(to)
+        to = getattr(user, settings.MOBILE_FIELD_NAME)
+        return settings.SMS_SENDERS.passwordless_request(self.request, context).send(to)
 
 
 class AbstractExchangePasswordlessTokenForAuthTokenView(TokenCreateView):
     """Use this endpoint to obtain user authentication token."""
-    permission_classes = settings.PASSWORDLESS["PERMISSIONS"].passwordless_token_exchange   
+    permission_classes = settings.PERMISSIONS.passwordless_token_exchange   
     
     @property
     def serializer_class(self):
         # Our serializer depending on type
         raise NotImplementedError
 
-    @method_decorator(settings.PASSWORDLESS["DECORATORS"].token_redeem_rate_limit_decorator)  
+    @method_decorator(settings.DECORATORS.token_redeem_rate_limit_decorator)  
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
@@ -131,17 +132,17 @@ class AbstractExchangePasswordlessTokenForAuthTokenView(TokenCreateView):
           )
         
         token = utils.login_user(self.request, user)
-        token_serializer_class = settings.SERIALIZERS.token
+        token_serializer_class = djoser_settings.SERIALIZERS.token
         return Response(
             data=token_serializer_class(token).data, status=status.HTTP_200_OK
         )
 
 
 class EmailExchangePasswordlessTokenForAuthTokenView(AbstractExchangePasswordlessTokenForAuthTokenView):
-    serializer_class = settings.PASSWORDLESS["SERIALIZERS"].passwordless_email_token_exchange
+    serializer_class = settings.SERIALIZERS.passwordless_email_token_exchange
 
 class MobileExchangePasswordlessTokenForAuthTokenView(AbstractExchangePasswordlessTokenForAuthTokenView):
-    serializer_class = settings.PASSWORDLESS["SERIALIZERS"].passwordless_mobile_token_exchange
+    serializer_class = settings.SERIALIZERS.passwordless_mobile_token_exchange
 
 class StandaloneExchangePasswordlessTokenForAuthTokenView(AbstractExchangePasswordlessTokenForAuthTokenView):
-    serializer_class = settings.PASSWORDLESS["SERIALIZERS"].passwordless_standalone_token_exchange
+    serializer_class = settings.SERIALIZERS.passwordless_standalone_token_exchange

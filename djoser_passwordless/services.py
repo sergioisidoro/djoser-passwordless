@@ -1,7 +1,7 @@
 
 from django.utils.timezone import now, timedelta
 from django.db.models import Q
-from djoser.conf import settings
+from djoser_passwordless.conf import settings
 from django.db import transaction, IntegrityError
 from .utils import (
     create_challenge,
@@ -14,7 +14,7 @@ class PasswordlessTokenService(object):
         # We need to ensure the token is unique, so we'll wrap it in a
         # transaction that retries if the token is not unique.
         tries = 0
-        PasswordlessChallengeToken.objects.delete_expired(settings.PASSWORDLESS["TOKEN_LIFETIME"], settings.PASSWORDLESS["MAX_TOKEN_USES"])
+        PasswordlessChallengeToken.objects.delete_expired(settings.TOKEN_LIFETIME, settings.MAX_TOKEN_USES)
         try:
             with transaction.atomic():
                 return PasswordlessTokenService._generate_create_token(user, identifier_type)
@@ -33,8 +33,8 @@ class PasswordlessTokenService(object):
         # Remove all tokens for this user when issuing a new one
         user.djoser_passwordless_tokens.all().delete()
         token = PasswordlessChallengeToken.objects.create(
-            token = create_challenge(settings.PASSWORDLESS["LONG_TOKEN_LENGTH"], settings.PASSWORDLESS["LONG_TOKEN_CHARS"]),
-            short_token = create_challenge(settings.PASSWORDLESS["SHORT_TOKEN_LENGTH"], settings.PASSWORDLESS["SHORT_TOKEN_CHARS"]),
+            token = create_challenge(settings.LONG_TOKEN_LENGTH, settings.LONG_TOKEN_CHARS),
+            short_token = create_challenge(settings.SHORT_TOKEN_LENGTH, settings.SHORT_TOKEN_CHARS),
             token_request_identifier=identifier_type,
             user=user
         )
@@ -57,7 +57,7 @@ class PasswordlessTokenService(object):
                 )
             token = PasswordlessChallengeToken.objects.get(query)
         except PasswordlessChallengeToken.DoesNotExist:
-            if identifier_value and identifier_field and settings.PASSWORDLESS["INCORRECT_SHORT_TOKEN_REDEEMS_TOKEN"]:
+            if identifier_value and identifier_field and settings.INCORRECT_SHORT_TOKEN_REDEEMS_TOKEN:
                 # If the token is not found, we'll check if the identifier_value
                 # and identifier_field match an existing token. If so, we'll increment the
                 # number of attempts for the user. If the user has reached the
@@ -76,7 +76,7 @@ class PasswordlessTokenService(object):
     
             return None
 
-        if not token.is_valid(settings.PASSWORDLESS["TOKEN_LIFETIME"], settings.PASSWORDLESS["MAX_TOKEN_USES"]):
+        if not token.is_valid(settings.TOKEN_LIFETIME, settings.MAX_TOKEN_USES):
             return None
             
         token.redeem()

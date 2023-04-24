@@ -13,8 +13,8 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
     url = reverse("passwordless_email_signup_request")
 
     @override_settings(
-        DJOSER=dict(settings.DJOSER, **{
-          "PASSWORDLESS": {"REGISTER_NONEXISTENT_USERS": False}
+        DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
+          "REGISTER_NONEXISTENT_USERS": False
         })
     )
     def test_post_with_non_existing_user_should_return_400_if_registration_disabled(self):
@@ -23,8 +23,8 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
         self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
 
     @override_settings(
-        DJOSER=dict(settings.DJOSER, **{
-          "PASSWORDLESS": {"REGISTER_NONEXISTENT_USERS": True}
+        DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
+          "REGISTER_NONEXISTENT_USERS": True
         })
     )
     def test_post_request_with_new_user_successful_with_registration_enabled(self):

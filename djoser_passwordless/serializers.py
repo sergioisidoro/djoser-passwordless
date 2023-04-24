@@ -3,7 +3,7 @@ from rest_framework import serializers, validators
 from djoser_passwordless.constants import Messages
 from django.contrib.auth import get_user_model
 from .services import PasswordlessTokenService
-from djoser.conf import settings
+from djoser_passwordless.conf import settings
 
 User = get_user_model()
 
@@ -22,7 +22,7 @@ class AbstractPasswordlessTokenRequestSerializer(serializers.Serializer):
         validated_data = super().validate(data)
         identifier_value = validated_data[self.token_request_identifier_field]
         user = self.find_user_by_identifier(identifier_value)
-        if not settings.PASSWORDLESS["REGISTER_NONEXISTENT_USERS"] and not user:
+        if not settings.REGISTER_NONEXISTENT_USERS and not user:
             raise serializers.ValidationError(Messages.CANNOT_SEND_TOKEN)
         return validated_data
 
@@ -30,10 +30,10 @@ class AbstractPasswordlessTokenRequestSerializer(serializers.Serializer):
         identifier_value = validated_data[self.token_request_identifier_field]
         user = self.find_user_by_identifier(identifier_value)
 
-        if settings.PASSWORDLESS["REGISTER_NONEXISTENT_USERS"] is True and not user:
+        if settings.REGISTER_NONEXISTENT_USERS is True and not user:
             attributes = {
                 self.token_request_identifier_field: identifier_value,
-                User.USERNAME_FIELD: settings.PASSWORDLESS["GENERATORS"].username_generator(),
+                User.USERNAME_FIELD: settings.GENERATORS.username_generator(),
             }
             user = User.objects.create(**attributes)
             user.set_unusable_password()
@@ -48,17 +48,17 @@ class PasswordlessEmailTokenRequestSerializerMixin(object):
     
     @property
     def token_request_identifier_field(self):
-        return settings.PASSWORDLESS["EMAIL_FIELD_NAME"]
+        return settings.EMAIL_FIELD_NAME
 
 
 class PasswordlessMobileTokenRequestSerializerMixin(object):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields[settings.PASSWORDLESS["MOBILE_FIELD_NAME"]] = PhoneNumberField(required=True)
+        self.fields[settings.MOBILE_FIELD_NAME] = PhoneNumberField(required=True)
 
     @property
     def token_request_identifier_field(self):
-        return settings.PASSWORDLESS["MOBILE_FIELD_NAME"]
+        return settings.MOBILE_FIELD_NAME
     
 
 class PasswordlessEmailTokenRequestSerializer(PasswordlessEmailTokenRequestSerializerMixin, AbstractPasswordlessTokenRequestSerializer):
@@ -100,5 +100,5 @@ class PasswordlessMobileTokenExchangeSerializer(PasswordlessMobileTokenRequestSe
     pass
     
 
-class StandalonePasswordlessExchangeSerializer(serializers.Serializer):
+class StandalonePasswordlessExchangeSerializer(AbstractPasswordlessTokenExchangeSerializer):
     pass
