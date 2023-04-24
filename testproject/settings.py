@@ -17,6 +17,9 @@ SECRET_KEY = "_"
 
 MIDDLEWARE = ["django.contrib.sessions.middleware.SessionMiddleware"]
 
+AUTH_USER_MODEL="testapp.StandardUser"
+
+SMS_BACKEND = 'sms.backends.locmem.SmsBackend'
 
 INSTALLED_APPS = (
     "django.contrib.auth",
