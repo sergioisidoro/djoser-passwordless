@@ -8,8 +8,8 @@ readme = "README.md"
 packages = [{include = "djoser_passwordless"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
-djoser = "^2.2.0"
+python = "^3.8"
+djoser = "<3.0.0"
 django-sms = "^0.6.0"
 django-phonenumber-field = {extras = ["phonenumberslite"], version = "^7.0.2"}
 
