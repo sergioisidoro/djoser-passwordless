@@ -20,6 +20,7 @@ djet = "^0.3.0"
 django = "^4.2"
 coverage = "^7.2.3"
 pytest-cov = "^4.0.0"
+exceptiongroup = "^1.1.1"
 
 [build-system]
 requires = ["poetry-core"]
