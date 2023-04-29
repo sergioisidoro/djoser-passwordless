@@ -1,4 +1,6 @@
 **⛔️ WORK IN PROGRESS - not yet released**
+![Main status](https://github.com/sergioisidoro/djoser-passwordless/actions/workflows/test-suite.yml/badge.svg)
+[![codecov](https://codecov.io/gh/sergioisidoro/djoser-passwordless/branch/main/graph/badge.svg?token=96USU05I2T)](https://codecov.io/gh/sergioisidoro/djoser-passwordless)
 
 # Djoser passwordless
 A Passwordless login add-on for Djoser (Django Rest Framework authentication). Built with `djoser`, `django-sms` and `django-phonenumber-field`
@@ -44,11 +46,6 @@ Although token requests are throttled by default, and token lifetime is limited,
 * Set `INCORRECT_SHORT_TOKEN_REDEEMS_TOKEN` to `True`, so that any attempts at redeeming a token from an account will count as a user (`MAX_TOKEN_USES` is default set to 1) - **Tradeoff** is that if a user is being a victim of brute force attack, they will not be able to login with passwordless tokens, since it's likely the attacker will exhaust the token uses with failed attempts 
 
 * Set `DECORATORS.token_redeem_rate_limit_decorator` or `DECORATORS.token_request_rate_limit_decorator` with your choice of request throttling library. - **Tradeoff** is that if there is an attacker hitting your service, you might prevent **any** user from logging in because someone is hitting this endpoint, so beware how you implement it. Note that because request limiting usually requires a key value db like redis, it is explicitly left out of this project to reduce it's dependencies and configuration needs.
-
-
-* Free software: MIT license
-* Documentation: https://djoser-passwordless.readthedocs.io.
-
 
 ## Features
 * International phone number validation and standardization (expects db phone numbers to be in same format)
@@ -97,3 +94,6 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 * Cookiecutter: https://github.com/audreyr/cookiecutter
 * `audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 
+## License
+* Free software: MIT license
+* Do no harm
