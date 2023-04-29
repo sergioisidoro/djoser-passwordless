@@ -61,6 +61,13 @@ class AbstractPasswordlessTokenRequestView(APIView):
             
             if not user:
                 self._respond_not_ok()
+
+            if not settings.ALLOW_ADMIN_AUTHENTICATION:
+                # Only allow admin users to authenticate with password
+                # Note that AbstractBaseUser does not have is_staff and is_superuser properties.
+                # and in that case the use will be able to proceed.
+                if getattr(user, "is_staff", None) or getattr(user, "is_superuser", None):
+                    return self._respond_not_ok()
                 
             # Create and send callback token
             token = PasswordlessTokenService.create_token(user, self.token_request_identifier_field)

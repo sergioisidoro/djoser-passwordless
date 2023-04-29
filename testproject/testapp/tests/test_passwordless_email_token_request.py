@@ -32,13 +32,51 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
           "REGISTER_NONEXISTENT_USERS": True
         })
     )
-    def test_post_request_with_new_user_successful_with_registration_enabled(self):
+    def test_post_request_with_new_user_successful_with_unusable_password_when_registration_enabled(self):
         data = {"email": "super@duper.com"}
         response = self.client.post(self.url, data=data)
         self.assert_status_equal(response, status.HTTP_200_OK)
+        user = User.objects.filter(email=data["email"]).first()
+        self.assertIsNotNone(user)
+        self.assertFalse(user.has_usable_password())
+
+    @override_settings(
+        DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
+          "REGISTER_NONEXISTENT_USERS": True,
+          "REGISTRATION_SETS_UNUSABLE_PASSWORD": False
+        })
+    )
+    def test_post_request_with_new_user_successful_with_usable_password_when_registration_enabled(self):
+        data = {"email": "super@duper.com"}
+        response = self.client.post(self.url, data=data)
+        self.assert_status_equal(response, status.HTTP_200_OK)
+        user = User.objects.filter(email=data["email"]).first()
+        self.assertIsNotNone(user)
+        self.assertTrue(user.has_usable_password())
 
     def test_post_request_with_existing_user_successful(self):
         user = create_user()
+        data = {"email": user.email}
+        response = self.client.post(self.url, data=data)
+        self.assert_status_equal(response, status.HTTP_200_OK)
+
+    def test_post_request_for_staff_fails(self):
+        user = create_user()
+        user.is_staff = True
+        user.save()
+        data = {"email": user.email}
+        response = self.client.post(self.url, data=data)
+        self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
+
+    @override_settings(
+        DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
+          "ALLOW_ADMIN_AUTHENTICATION": True
+        })
+    )
+    def test_post_request_for_staff_succeeds_if_allowed(self):
+        user = create_user()
+        user.is_staff = True
+        user.save()
         data = {"email": user.email}
         response = self.client.post(self.url, data=data)
         self.assert_status_equal(response, status.HTTP_200_OK)

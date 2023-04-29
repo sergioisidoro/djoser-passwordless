@@ -1,5 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractUser, AbstractBaseUser
 from django.db import models
 
 
@@ -13,7 +13,7 @@ class StandardUserManager(BaseUserManager):
         user.save()
         return user
 
-class StandardUser(AbstractBaseUser):
+class StandardUser(AbstractUser):
     email = models.EmailField(blank=True)
     # Phone number is field agnostic, but it expects all numbers to be in E.164 format
     # or other configured format according to django phonenumber field settings

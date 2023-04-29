@@ -36,7 +36,8 @@ class AbstractPasswordlessTokenRequestSerializer(serializers.Serializer):
                 User.USERNAME_FIELD: settings.GENERATORS.username_generator(),
             }
             user = User.objects.create(**attributes)
-            user.set_unusable_password()
+            if settings.REGISTRATION_SETS_UNUSABLE_PASSWORD:
+              user.set_unusable_password()
             user.save()
         return user
 

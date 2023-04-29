@@ -26,13 +26,15 @@ default_settings = {
     "SHORT_TOKEN_CHARS": "0123456789",
     "LONG_TOKEN_CHARS": "abcdefghijklmnopqrstuvwxyz0123456789",
     "TOKEN_LIFETIME": 600,
-    "REGISTER_NONEXISTENT_USERS": True,
+    "ALLOW_ADMIN_AUTHENTICATION": False,
+    "REGISTER_NONEXISTENT_USERS": False,
+    "REGISTRATION_SETS_UNUSABLE_PASSWORD": True,
     "EMAIL_FIELD_NAME": "email",
     "MOBILE_FIELD_NAME": "phone_number",
     # If true, an attempt to redeem a token with the wrong token type
     # will count for the times a token has been used
     "INCORRECT_SHORT_TOKEN_REDEEMS_TOKEN": False,
-    "ALLOWED_PASSWORDLESS_METHODS": ["EMAIL", "MOBILE"],
+    "ALLOWED_PASSWORDLESS_METHODS": ["EMAIL"], # ["EMAIL", "MOBILE"]
     "PASSWORDLESS_EMAIL_LOGIN_URL": None,
     "MAX_TOKEN_USES": 1,
     "GENERATORS": ObjDict({
