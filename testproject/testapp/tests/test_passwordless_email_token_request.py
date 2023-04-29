@@ -81,6 +81,11 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
         response = self.client.post(self.url, data=data)
         self.assert_status_equal(response, status.HTTP_200_OK)
 
+    @override_settings(
+        DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
+          "TOKEN_REQUEST_THROTTLE_SECONDS": None
+        })
+    )
     def test_post_request_user_should_not_have_more_than_one_active_token(self):
         user = create_user()
         data = {"email": user.email}

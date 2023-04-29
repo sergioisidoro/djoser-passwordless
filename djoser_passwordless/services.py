@@ -14,7 +14,8 @@ class PasswordlessTokenService(object):
         # We need to ensure the token is unique, so we'll wrap it in a
         # transaction that retries if the token is not unique.
         tries = 0
-        PasswordlessChallengeToken.objects.delete_expired(settings.TOKEN_LIFETIME, settings.MAX_TOKEN_USES)
+        # Only clear tokens that already go beyond the throttle time.
+        PasswordlessChallengeToken.objects.delete_expired(settings.TOKEN_LIFETIME, settings.MAX_TOKEN_USES, settings.TOKEN_REQUEST_THROTTLE_SECONDS)
         try:
             with transaction.atomic():
                 return PasswordlessTokenService._generate_create_token(user, identifier_type)
@@ -27,6 +28,12 @@ class PasswordlessTokenService(object):
                 # raise the exception. Maybe add a message to the admin to cleanup
                 # expired stale tokens, or to increase the token length.
                 raise exception
+
+    @staticmethod
+    def should_throttle(user):
+        if settings.TOKEN_REQUEST_THROTTLE_SECONDS:
+            return user.djoser_passwordless_tokens.filter(created_at__gt=now() - timedelta(seconds=settings.TOKEN_REQUEST_THROTTLE_SECONDS)).count() > 0
+        return False
 
     @staticmethod
     def _generate_create_token(user, identifier_type):

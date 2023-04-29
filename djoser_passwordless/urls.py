@@ -14,17 +14,17 @@ urlpatterns = [
         name="passwordless_mobile_signup_request",
     ),
     re_path(
-        r"^exchange/mobile$",
+        r"^exchange/mobile/$",
         views.MobileExchangePasswordlessTokenForAuthTokenView.as_view(),
         name="mobile_passwordless_token_exchange",
     ),
     re_path(
-        r"^exchange/email$",
+        r"^exchange/email/$",
         views.EmailExchangePasswordlessTokenForAuthTokenView.as_view(),
         name="email_passwordless_token_exchange",
     ),
     re_path(
-        r"^exchange/standalone$",
+        r"^exchange/standalone/$",
         views.StandaloneExchangePasswordlessTokenForAuthTokenView.as_view(),
         name="standalone_passwordless_token_exchange",
     )

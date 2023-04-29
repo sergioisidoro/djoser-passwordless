@@ -60,7 +60,9 @@ class AbstractPasswordlessTokenRequestView(APIView):
             user = serializer.save()
             
             if not user:
-                self._respond_not_ok()
+                return self._respond_not_ok()
+            if PasswordlessTokenService.should_throttle(user):
+                return self._respond_not_ok()
 
             if not settings.ALLOW_ADMIN_AUTHENTICATION:
                 # Only allow admin users to authenticate with password

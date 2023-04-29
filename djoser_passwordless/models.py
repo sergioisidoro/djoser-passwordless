@@ -5,11 +5,14 @@ from datetime import timedelta
 
 
 class PasswordlessChallengeTokenManager(models.Manager):
-    def delete_expired(self, token_lifetime_seconds, max_token_uses):
-        return self.filter(
-            models.Q(created_at__lt=now() - timedelta(seconds=token_lifetime_seconds))
-            | models.Q(uses__gte=max_token_uses)
-        ).delete()  
+    
+    def delete_expired(self, token_lifetime_seconds, max_token_uses, only_older_than: None):
+        query = models.Q(created_at__lt=now() - timedelta(seconds=token_lifetime_seconds)) | models.Q(uses__gte=max_token_uses)
+
+        if only_older_than:
+            query = query | models.Q(created_at__lt=now() - timedelta(seconds=only_older_than))
+
+        return self.filter(query).delete()  
 
 class PasswordlessChallengeToken(models.Model):
     objects = PasswordlessChallengeTokenManager()

@@ -44,6 +44,11 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
         self.assert_status_equal(response, status.HTTP_200_OK)
         user.djoser_passwordless_tokens.count() == 1
 
+    @override_settings(
+        DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
+          "TOKEN_REQUEST_THROTTLE_SECONDS": None
+        })
+    )
     def test_post_request_user_should_not_have_more_than_one_active_token(self):
         user = create_user(phone_number="+358414111111")
         data = {"phone_number": "+358414111111"}
@@ -53,6 +58,11 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
         self.assert_status_equal(response, status.HTTP_200_OK)
         user.djoser_passwordless_tokens.count() == 1
 
+    @override_settings(
+        DJOSER_PASSWORDLESS=dict(settings.DJOSER_PASSWORDLESS, **{
+          "TOKEN_REQUEST_THROTTLE_SECONDS": None
+        })
+    )
     def test_normalize_phone_number_do_not_create_multiple(self):
         user = create_user(phone_number="+358414111111")
         data = {"phone_number": "+358 0414111111"}
@@ -63,4 +73,14 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
         response = self.client.post(self.url, data=data)
         self.assert_status_equal(response, status.HTTP_200_OK)
 
+        user.djoser_passwordless_tokens.count() == 1
+
+    def test_throttle_token_requests_independently_of_phone_format(self):
+        user = create_user(phone_number="+358414111111")
+        data = {"phone_number": "+358 0414111111"}
+        response = self.client.post(self.url, data=data)
+        self.assert_status_equal(response, status.HTTP_200_OK)
+        data = {"phone_number": "+358 414111111"}
+        response = self.client.post(self.url, data=data)
+        self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
         user.djoser_passwordless_tokens.count() == 1
