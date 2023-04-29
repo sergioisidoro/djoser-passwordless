@@ -22,7 +22,7 @@ jobs:
         with:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Install dependencies
-        run: poetry install --only main,test --all-extras
+        run: poetry install --only main,dev --all-extras
       - name: Upgrade django version
         run: |
           poetry run pip install "Django==${{ matrix.django-version }}"
