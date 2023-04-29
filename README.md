@@ -38,7 +38,7 @@ urlpatterns = (
 
 ## 🕵️ Risks 
 ### Brute force
-Although token requests are throttled by default, and token lifetime is limited, if you know a user email/phone it is possible to continuously request tokens (the default throttle is 1 minute), and try to brute force that token during the token lifetime (10 minutes). The worst case scenario you can have 10 active tokens that the user can brute force.
+Although token requests are throttled by default, and token lifetime is limited, if you know a user email/phone it is possible to continuously request tokens (the default throttle is 1 minute), and try to brute force that token during the token lifetime (10 minutes).
 
 #### Mitigations
 * Set `INCORRECT_SHORT_TOKEN_REDEEMS_TOKEN` to `True`, so that any attempts at redeeming a token from an account will count as a user (`MAX_TOKEN_USES` is default set to 1) - **Tradeoff** is that if a user is being a victim of brute force attack, they will not be able to login with passwordless tokens, since it's likely the attacker will exhaust the token uses with failed attempts 
