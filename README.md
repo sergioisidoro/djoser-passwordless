@@ -54,7 +54,15 @@ Although token requests are throttled by default, and token lifetime is limited,
 * Short (for SMS) and long tokens for magic links
 * Configurable serializers, permissions and decorators.
 
-## Examples:
+## URLs and Examples:
+
+#### Available URLS
+* `request/email/`
+* `request/mobile`
+* `exchange/standalone/`
+* `exchange/email/`
+* `exchange/mobile/`
+
 **Requesting a token**
 ```.sh
 curl --request POST \
