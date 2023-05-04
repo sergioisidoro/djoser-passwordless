@@ -42,10 +42,9 @@ class AbstractPasswordlessTokenRequestView(APIView):
         response_detail = self.success_response
         return Response({'detail': response_detail}, status=status_code)
         
-    def _respond_not_ok(self):
-        status_code = status.HTTP_400_BAD_REQUEST
+    def _respond_not_ok(self, status=status.HTTP_400_BAD_REQUEST):
         response_detail = self.failure_response
-        return Response({'detail': response_detail}, status=status_code)
+        return Response({'detail': response_detail}, status=status)
 
 
     @method_decorator(settings.DECORATORS.token_request_rate_limit_decorator)  
@@ -62,7 +61,7 @@ class AbstractPasswordlessTokenRequestView(APIView):
             if not user:
                 return self._respond_not_ok()
             if PasswordlessTokenService.should_throttle(user):
-                return self._respond_not_ok()
+                return self._respond_not_ok(status.HTTP_429_TOO_MANY_REQUESTS)
 
             if not settings.ALLOW_ADMIN_AUTHENTICATION:
                 # Only allow admin users to authenticate with password

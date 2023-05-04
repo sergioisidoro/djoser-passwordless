@@ -82,5 +82,5 @@ class TestPasswordlessEmailTokenRequest(APITestCase, assertions.StatusCodeAssert
         self.assert_status_equal(response, status.HTTP_200_OK)
         data = {"phone_number": "+358 414111111"}
         response = self.client.post(self.url, data=data)
-        self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
+        self.assert_status_equal(response, status.HTTP_429_TOO_MANY_REQUESTS)
         user.djoser_passwordless_tokens.count() == 1
